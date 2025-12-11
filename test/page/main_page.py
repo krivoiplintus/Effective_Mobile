@@ -1,7 +1,8 @@
 import allure
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from configyration.config_provider import ConfigProvider
 
 
@@ -12,36 +13,43 @@ class MainPage():
         self.__driver.get(self.__url)
         self.__driver.fullscreen_window()
 
-    @allure.step("Добавить cookie авторизации")
-    def auth(self, cookie: dict) -> None:
-        """
-            Добавление cookie авторизации
-        """
-        self.__cookie = cookie
-        self.__driver.add_cookie(self.__cookie)
-        self.__driver.refresh()
+    @allure.step("Кликнуть по кнопке Актуальные вакансии")
+    def сurrent_vacanciesic_click(self):
+        parent_handle = self.__driver.current_window_handle
+        self.__driver.find_element(By.CSS_SELECTOR, 'a[href="https://ai-hunt.ru/vacancies/"]').click()
+        self.__driver.implicitly_wait(3)
+        for handle in self.__driver.window_handles:
+            if handle != parent_handle:
+                self.__driver.switch_to.window(handle)
+                break
 
-    @allure.step("Кликнуть по кнопке войти")
-    def authorization_click(self):
-        self.__driver.find_element(By.CSS_SELECTOR, 'button.header-profile__button').click()
+    @allure.step("Проверить, что открылась страница со списком вакансий ")
+    def list_vacancies_open(self) -> None:
+        WebDriverWait(self.__driver, 10).until(EC.url_to_be("https://ai-hunt.ru/vacancies/"))
+        title = self.__driver.title
+        return title
 
-    @allure.step("Ввести номер телефона")
-    def say_number(self, number: str) -> None:
-        self.__driver.find_element(By.CSS_SELECTOR, 'input.phone-input__input').send_keys(number)
+    @allure.step("Кликнуть по кнопке Оставить заявку")
+    def leave_request_click(self) -> None:
+        self.__driver.find_elements(By.CSS_SELECTOR, 'button[data-slot="button"]')[0].click()
+        self.__driver.implicitly_wait(3)
 
-    @allure.step("Найти атрибут 'class' кнопки")
-    def find_atribyte_button(self) -> None:
-        return self.__driver.find_element(By.CSS_SELECTOR, 'button.app-button.auth-modal__sms-button.blue').get_attribute('class')
+    @allure.step("Проверить видимость кнопки Отправить заявку")
+    def send_an_application_vis(self) -> None:
+        wait = WebDriverWait(self.__driver, 10)
+        clickable_element = wait.until(
+            EC.visibility_of_element_located((By.CSS_SELECTOR, 'button[type="submit"]'))
+        )
+        return clickable_element
 
-    @allure.step("Поиск по заданным тестовым данным")
-    def search(self, query: str) -> None:
-        self.__driver.find_element(By.CSS_SELECTOR, 'input.header-search__input').send_keys(query)
-        self.__driver.find_element(By.CSS_SELECTOR, 'input.header-search__input').send_keys(Keys.RETURN)
+    @allure.step("Кликнуть по кнопке Узнать больше")
+    def find_out_more_click(self) -> None:
+        self.__driver.find_elements(By.CSS_SELECTOR, 'button[data-slot="button"]')[1].click()
 
-    @allure.step("Найти количество найденных книг")
-    def total_book_search(self) -> int:
-        return int(self.__driver.find_element(By.CSS_SELECTOR, 'span.search-categories-tree-item__count').text)
-
-    @allure.step("Найти сообщение о том, что книг не найдено")
-    def not_founded_search(self) -> str:
-        return self.__driver.find_element(By.CSS_SELECTOR, 'h4.catalog-empty-result__header').text
+    @allure.step("Проверить видимость карточек с вариантами сотрудничества")
+    def card_vis(self) -> None:
+        wait = WebDriverWait(self.__driver, 10)
+        clickable_element = wait.until(
+            EC.visibility_of_any_elements_located((By.CSS_SELECTOR, 'div[data-slot="card"]'))
+        )
+        return clickable_element
