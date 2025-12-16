@@ -1,7 +1,7 @@
 import json
 
 
-my_data = open('test_data.json')
+my_data = open('test_data/test_data.json')
 global_data = json.load(my_data)
 
 

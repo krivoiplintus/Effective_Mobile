@@ -20,4 +20,4 @@ class ConfigProvider:
         return self.config["ui"].get("url_main_page")
 
     def get_ui_timeout(self) -> int:
-        return self.config["ui"].getint('timeout')
+        return self.config["ui"].getint("timeout")
